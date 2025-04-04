@@ -1,7 +1,7 @@
 "use client"
 
 import { MapFilters } from "@/components/map-filters"
-import { MobileMap } from "@/components/mobile-map"
+import MobilePropertyMap from "@/components/mobile-property-map"
 import { PropertyList } from "@/components/property-list"
 import { SiteHeader } from "@/components/site-header"
 import { useMediaQuery } from "@/lib/hooks/use-media-query"
@@ -28,7 +28,7 @@ export default function MapSearchPage() {
   const visibleCount = usePropertyStore((state) => state.totalVisibleCount)
   // If on mobile, render the mobile map component
   if (isMobile) {
-    return <MobileMap />
+    return <MobilePropertyMap />
   }
 
   // Otherwise, render the desktop version
