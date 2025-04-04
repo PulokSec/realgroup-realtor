@@ -202,7 +202,7 @@ export default function ListingsPage() {
             </div>
           </div>
         )}
-        <div className="container mx-auto mt-10">
+        <div className="lg:container lg:mx-auto mx-0 mt-10">
           <p className="text-xs mt-5">
           Real Group Realty, Brokerage, the Real Group Web App, and the Real Group Mobile App are operated under license from Real Group Holdings Inc. Real Group Ventures Ltd., its subsidiaries, Community Trust Company ("CTC"), Flexiti Financial Inc., and Real Group Holdings Inc. are members of the Real Group Holdings family of companies. The Real Group Holdings family refers to Real Group Holdings Inc. and its affiliates, which provide deposit, investment, loan, securities, mortgage, real estate, and related financial or property services.
           </p>

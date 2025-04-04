@@ -92,3 +92,23 @@ body {
     @apply bg-background text-foreground;
   }
 }
+/* Custom mapbox overrides */
+.mapboxgl-ctrl-bottom-right {
+  margin-bottom: 8px;
+}
+
+.mapboxgl-ctrl-geolocate {
+  margin: 10px;
+}
+
+.mapboxgl-popup-close-button {
+  color: #4a5568;
+  &:hover {
+    color: #2d3748;
+  }
+}
+
+/* Touch scroll improvements */
+.mapboxgl-canvas-container {
+  touch-action: pan-y;
+}

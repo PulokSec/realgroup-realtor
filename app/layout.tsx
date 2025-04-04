@@ -35,6 +35,7 @@ export default function RootLayout({
           <AuthProvider>
           <RouteChangeLoader />
             {children}
+            <MobileBottomNav />
             <Toaster />
           </AuthProvider>
         </ThemeProvider>
@@ -48,4 +49,5 @@ export default function RootLayout({
 import './globals.css'
 import { RouteChangeLoader } from "@/components/route-change-loader"
 import Head from "next/head"
+import { MobileBottomNav } from "@/components/mobile-bottom-nav"
 

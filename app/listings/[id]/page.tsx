@@ -445,7 +445,7 @@ export default function PropertyDetailPage() {
         </div>
 
         {isMobile && (
-          <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t z-10">
+          <div className="fixed bottom-0 left-0 right-0 p-4 bg-black border-t z-10">
             <Button className="w-full">Contact Agent</Button>
           </div>
         )}
