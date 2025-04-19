@@ -49,7 +49,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
 
   return (
     <div
-      className={`group relative bg-white rounded-lg overflow-hidden border transition-all duration-200 ${isSelected ? "ring-2 ring-primary shadow-lg" : "hover:shadow-md"}`}
+      className={`group md:w-full w-[400px] relative bg-white rounded-lg overflow-hidden border transition-all duration-200 ${isSelected ? "ring-2 ring-primary md:shadow-lg" : "hover:shadow-md"}`}
       onMouseEnter={() => setHoveredProperty(id)}
       onMouseLeave={() => setHoveredProperty(null)}
       onClick={() => setSelectedProperty(id)}
@@ -64,7 +64,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
   src={hasError || !photo_url ? "/assets/call-image.jpg" : photo_url}
   alt={street_address}
   fill
-  className={`object-cover transition-transform group-hover:scale-105 ${
+  className={`object-cover transition-transform ${
     isImageLoading ? "opacity-0" : "opacity-100"
   }`}
   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

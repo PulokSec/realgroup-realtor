@@ -1,11 +1,10 @@
 "use client"
 
 import { PropertyCard } from "./property-card"
-import { Loader } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
-import { ChevronLeft, ChevronRight, MapPin } from "lucide-react"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 import { usePropertyStore } from "@/lib/store"
 
 interface PropertyListProps {
@@ -24,7 +23,7 @@ export function PropertyListUi({ properties, hideHeader, onBackToMap }: Property
   const selectedCardRef = useRef<HTMLDivElement>(null)
 
   const currentItems = properties.slice(
-    (currentPage - 1) * itemsPerPage, 
+    (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   )
 
@@ -52,12 +51,45 @@ export function PropertyListUi({ properties, hideHeader, onBackToMap }: Property
     )
   }
 
+  const renderPageButtons = () => {
+    const pageNumbers = []
+    const visiblePages = 3
+
+    const start = Math.max(1, currentPage - visiblePages)
+    const end = Math.min(totalPages, currentPage + visiblePages)
+
+    if (start > 1) pageNumbers.push(1)
+    if (start > 2) pageNumbers.push("...")
+
+    for (let i = start; i <= end; i++) {
+      pageNumbers.push(i)
+    }
+
+    if (end < totalPages - 1) pageNumbers.push("...")
+    if (end < totalPages) pageNumbers.push(totalPages)
+
+    return pageNumbers.map((page, i) =>
+      typeof page === "number" ? (
+        <Button
+          key={i}
+          variant={currentPage === page ? "default" : "outline"}
+          size="sm"
+          onClick={() => setCurrentPage(page)}
+        >
+          {page}
+        </Button>
+      ) : (
+        <span key={i} className="text-muted-foreground px-2 text-sm">...</span>
+      )
+    )
+  }
+
   return (
-    <div className="flex-1 flex flex-col">
+    <div className="flex-1 flex flex-col overflow-hidden">
       {!hideHeader && (
         <div className="sticky top-0 bg-background z-10 p-4 border-b">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="font-semibold">{totalCount} Properties</h2>
+          <div className="flex justify-between items-center flex-wrap gap-2 mb-4">
+            <h2 className="font-semibold text-base sm:text-lg">{totalCount} Properties</h2>
             <p className="text-sm text-muted-foreground">
               Page {currentPage} of {totalPages}
             </p>
@@ -65,17 +97,8 @@ export function PropertyListUi({ properties, hideHeader, onBackToMap }: Property
         </div>
       )}
 
-      {onBackToMap && (
-        <div className="p-4 border-b">
-          <Button variant="ghost" onClick={onBackToMap}>
-            <MapPin className="h-4 w-4 mr-2" />
-            Back to Map
-          </Button>
-        </div>
-      )}
-
-      <ScrollArea className="flex-1" ref={scrollAreaRef}>
-        <div className="p-4 grid grid-cols-1 gap-4">
+      <ScrollArea className="flex-1 overflow-auto" ref={scrollAreaRef}>
+        <div className="p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {currentItems.map((property) => (
             <div
               key={property.properties.id}
@@ -85,41 +108,35 @@ export function PropertyListUi({ properties, hideHeader, onBackToMap }: Property
             </div>
           ))}
         </div>
-
-        {totalPages > 1 && (
-          <div className="flex items-center justify-center mt-8 pb-8">
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                disabled={currentPage <= 1}
-              >
-                <ChevronLeft className="h-4 w-4 mr-2" />
-                Previous
-              </Button>
-              
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                <Button
-                  key={page}
-                  variant={currentPage === page ? "default" : "outline"}
-                  onClick={() => setCurrentPage(page)}
-                >
-                  {page}
-                </Button>
-              ))}
-
-              <Button
-                variant="outline"
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                disabled={currentPage >= totalPages}
-              >
-                Next
-                <ChevronRight className="h-4 w-4 ml-2" />
-              </Button>
-            </div>
-          </div>
-        )}
       </ScrollArea>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center mt-6 mb-24 px-2 w-full">
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage <= 1}
+            >
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Previous
+            </Button>
+
+            {renderPageButtons()}
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage >= totalPages}
+            >
+              Next
+              <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

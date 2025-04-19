@@ -49,8 +49,8 @@ export default function Home() {
                 className="w-full object-cover"
               />
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6 text-white">
-                <h3 className="font-bold">Your Real Group Real Estate Agent</h3>
-                <div className="mt-2 flex items-center gap-4">
+                <h3 className="font-bold text-center">Your Real Group Real Estate Agent</h3>
+                <div className="mt-2 flex items-center justify-between gap-4">
                   <div className="flex items-center gap-1">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -84,7 +84,7 @@ export default function Home() {
                       <rect width="20" height="16" x="2" y="4" rx="2"></rect>
                       <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
                     </svg>
-                    <span className="text-sm">REALESTATE@GMAIL.COM</span>
+                    <span className="text-xs">REALESTATE@GMAIL.COM</span>
                   </div>
                 </div>
               </div>
