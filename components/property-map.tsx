@@ -15,7 +15,6 @@ interface PropertyMapProps {
 export default function PropertyMap({ onLoadingChange }: PropertyMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<mapboxgl.Map | null>(null)
-  const markersRef = useRef<{ [key: string]: mapboxgl.Marker }>({})
   const [zoom] = useState(11)
 
   const allProperties = usePropertyStore((state) => state.properties)
@@ -82,7 +81,7 @@ export default function PropertyMap({ onLoadingChange }: PropertyMapProps) {
 
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
-      style: "mapbox://styles/mapbox/streets-v9",
+      style: "mapbox://styles/mapbox/satellite-v9",
       center: [-122.849, 49.1913],
       zoom,
       cooperativeGestures: true,
@@ -90,10 +89,8 @@ export default function PropertyMap({ onLoadingChange }: PropertyMapProps) {
 
     map.current.addControl(new mapboxgl.NavigationControl(), "bottom-right")
 
-    // Only fetch on user interactions (drag and zoom), not programmatic flyTo
     map.current.on("dragend", updateVisibleProperties)
     map.current.on("zoomend", (e) => {
-      // zoomend has originalEvent when user-initiated
       if ((e as any)?.originalEvent) {
         updateVisibleProperties()
       }
@@ -101,87 +98,199 @@ export default function PropertyMap({ onLoadingChange }: PropertyMapProps) {
 
     map.current.on("load", () => {
       map.current!.keyboard.enable()
+      
+      // Add GeoJSON source with clustering
+      map.current!.addSource('properties', {
+        type: 'geojson',
+        data: {
+          type: 'FeatureCollection',
+          features: displayProperties.map((property) => ({
+            ...property,
+            geometry: {
+              ...property.geometry,
+              coordinates: [property.geometry.coordinates[0], property.geometry.coordinates[1]],
+            },
+          })),
+        },
+        cluster: true,
+        clusterRadius: 50,
+        clusterMaxZoom: 14,
+      })
+
+      // Add cluster layers
+      map.current!.addLayer({
+        id: 'clusters',
+        type: 'circle',
+        source: 'properties',
+        filter: ['has', 'point_count'],
+        paint: {
+          'circle-color': [
+            'step',
+            ['get', 'point_count'],
+            '#6CAEDD',   // Default color
+            10,          // When point_count >= 10
+            '#4CAF50',  // Green
+            50,          // When point_count >= 50
+            '#FFC107'    // Yellow
+          ],
+          'circle-radius': [
+            'step',
+            ['get', 'point_count'],
+            20,
+            10, 25,
+            50, 30
+          ],
+          'circle-stroke-width': 1,
+          'circle-stroke-color': '#fff'
+        }
+      })
+
+      map.current!.addLayer({
+        id: 'cluster-count',
+        type: 'symbol',
+        source: 'properties',
+        filter: ['has', 'point_count'],
+        layout: {
+          'text-field': '{point_count_abbreviated}',
+          'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+          'text-size': 12
+        }
+      })
+
+      // Add individual property layer
+      map.current!.addLayer({
+        id: 'unclustered-point',
+        type: 'circle',
+        source: 'properties',
+        filter: ['!', ['has', 'point_count']],
+        paint: {
+          'circle-color': '#6CAEDD',
+          'circle-radius': 8,
+          'circle-stroke-width': 2,
+          'circle-stroke-color': '#ffffff'
+        }
+      })
+
+      // Add hover layer
+      map.current!.addLayer({
+        id: 'hovered-point',
+        type: 'circle',
+        source: 'properties',
+        filter: ['==', 'id', ''],
+        paint: {
+          'circle-color': '#0A75C2',
+          'circle-radius': 12,
+          'circle-stroke-width': 2,
+          'circle-stroke-color': '#ffffff'
+        }
+      })
+
+      // Add selected property layer
+      map.current!.addLayer({
+        id: 'selected-point',
+        type: 'circle',
+        source: 'properties',
+        filter: ['==', 'id', ''],
+        paint: {
+          'circle-color': '#0A75C2',
+          'circle-radius': 16,
+          'circle-stroke-width': 3,
+          'circle-stroke-color': '#ffffff'
+        }
+      })
+
+      // Cluster click handler
+      map.current!.on('click', 'clusters', (e) => {
+        const features = map.current!.queryRenderedFeatures(e.point, {
+          layers: ['clusters']
+        })
+        const clusterId = features[0].properties!.cluster_id
+        const source = map.current!.getSource('properties') as mapboxgl.GeoJSONSource
+
+        source.getClusterExpansionZoom(clusterId, (err, zoom) => {
+          if (err) return
+
+          map.current!.easeTo({
+            center: (features[0].geometry as any).coordinates,
+            zoom: zoom ?? 11
+          })
+        })
+      })
+
+      // Individual property click handler
+      map.current!.on('click', 'unclustered-point', (e) => {
+        const feature = e.features![0]
+        if (feature.properties) {
+          handlePropertyClick(feature.properties.id)
+        }
+      })
+
+      // Cursor styling
+      map.current!.on('mouseenter', 'clusters', () => {
+        map.current!.getCanvas().style.cursor = 'pointer'
+      })
+      map.current!.on('mouseleave', 'clusters', () => {
+        map.current!.getCanvas().style.cursor = ''
+      })
+
       updateVisibleProperties()
     })
 
-    const styleEl = document.createElement("style")
-    styleEl.textContent = `
-      .hovered-marker { z-index: 10 !important; transform: scale(1.3) !important; background-color: #0A75C2 !important; }
-      .marker { transition: transform 0.2s ease; cursor: pointer; }
-      .marker-selected { z-index: 11 !important; transform: scale(1.8) !important; }
-    `
-    document.head.appendChild(styleEl)
-
     return () => {
       map.current?.remove()
-      document.head.removeChild(styleEl)
     }
   }, [zoom, updateVisibleProperties])
 
   useEffect(() => {
-    if (!map.current) return
+    if (!map.current || !map.current.getSource('properties')) return
 
-    Object.values(markersRef.current).forEach((m) => m.remove())
-    markersRef.current = {}
-
-    displayProperties.forEach((property) => {
-      const id = property.properties.id
-      const [lng, lat] = property.geometry.coordinates
-      const price = property.properties.price
-
-      const el = document.createElement("div")
-      el.className = "marker"
-      el.innerHTML = `<div class=\"bg-[#6CAEDDFF] text-white px-2 py-1 rounded-full text-xs font-bold shadow-md w-4 h-4 border border-white border-1 hover:bg-primary\"></div>`
-
-      const marker = new mapboxgl.Marker(el).setLngLat([lng, lat]).addTo(map.current!) 
-      el.addEventListener("click", () => handlePropertyClick(id))
-      markersRef.current[id] = marker
+    const source = map.current.getSource('properties') as mapboxgl.GeoJSONSource
+    source.setData({
+      type: 'FeatureCollection',
+      features: displayProperties.map((property) => ({
+        ...property,
+        geometry: {
+          ...property.geometry,
+          coordinates: [property.geometry.coordinates[0], property.geometry.coordinates[1]],
+        },
+      })),
     })
-  }, [displayProperties, handlePropertyClick])
+  }, [displayProperties])
+
+  useEffect(() => {
+    if (!map.current || !map.current.getLayer('selected-point')) return
+    map.current.setFilter('selected-point', ['==', 'id', selectedProperty || ''])
+  }, [selectedProperty])
+
+  useEffect(() => {
+    if (!map.current || !map.current.getLayer('hovered-point')) return
+    map.current.setFilter('hovered-point', ['==', 'id', hoveredProperty || ''])
+  }, [hoveredProperty])
 
   useEffect(() => {
     if (!map.current || !selectedProperty) return
 
-    Object.values(markersRef.current).forEach((m) => m.getPopup()?.remove())
     const prop = displayProperties.find((p) => p.properties.id === selectedProperty)
     if (!prop) return
 
-    map.current.flyTo({
-      center: prop.geometry.coordinates as [number, number],
-      zoom: 15,
-      essential: true,
-    })
+    const popup = new mapboxgl.Popup({ closeOnClick: false })
+      .setLngLat(prop.geometry.coordinates as [number, number])
+      .setHTML(
+        `<div class="p-2">
+          <img src="${prop.properties.photo_url}" alt="Property" class="w-full h-32 object-cover rounded mb-2" onerror="this.src='/assets/call-image.jpg'; this.onerror=null;" />
+          <div class="font-bold">$${Number(prop.properties.price).toLocaleString()}</div>
+          <div>${prop.properties.bedrooms_total} bed, ${prop.properties.bathroom_total} bath</div>
+          <div class="truncate">${prop.properties.street_address}</div>
+          <div>${prop.properties.type}</div>
+          <a href="/listings/${prop.properties.listing_id}" class="text-blue-500 hover:underline text-sm">View Details</a>
+        </div>`
+      )
+      .addTo(map.current)
 
-    const marker = markersRef.current[selectedProperty]
-    if (marker) {
-      const popup = new mapboxgl.Popup({ closeOnClick: false })
-        .setLngLat(prop.geometry.coordinates as [number, number])
-        .setHTML(
-          `<div class=\"p-2\">
-             <img src=\"${prop.properties.photo_url}\" alt=\"Property\" class=\"w-full h-32 object-cover rounded mb-2\" onerror=\"this.src='/assets/call-image.jpg'; this.onerror=null;\" />
-             <div class=\"font-bold\">$${Number(prop.properties.price).toLocaleString()}</div>
-             <div>${prop.properties.bedrooms_total} bed, ${prop.properties.bathroom_total} bath</div>
-             <div class=\"truncate\">${prop.properties.street_address}</div>
-             <div>${prop.properties.type}</div>
-             <a href=\"/listings/${prop.properties.listing_id}\" class=\"text-blue-500 hover:underline text-sm\">View Details</a>
-           </div>`
-        )
-        .addTo(map.current)
-      marker.setPopup(popup)
+    return () => {
+      popup.remove()
     }
   }, [selectedProperty, displayProperties])
-
-  useEffect(() => {
-    if (!map.current) return
-
-    Object.values(markersRef.current).forEach((marker) => {
-      marker.getElement().classList.remove("hovered-marker", "marker-selected")
-    })
-
-    if (hoveredProperty && markersRef.current[hoveredProperty]) {
-      markersRef.current[hoveredProperty].getElement().classList.add("hovered-marker")
-    }
-  }, [hoveredProperty])
 
   return (
     <div className="relative w-full h-full">
@@ -192,6 +301,11 @@ export default function PropertyMap({ onLoadingChange }: PropertyMapProps) {
           <p>Please Wait...</p>
         </div>
       )}
+      <div className="absolute top-4 right-4 z-10">
+            <div className="bg-white px-3 py-2 rounded-full shadow-md text-sm font-medium">
+              Safelight View
+            </div>
+          </div>
     </div>
   )
 }

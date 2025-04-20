@@ -49,7 +49,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
 
   return (
     <div
-      className={`group md:w-full w-[400px] relative bg-white rounded-lg overflow-hidden border transition-all duration-200 ${isSelected ? "ring-2 ring-primary md:shadow-lg" : "hover:shadow-md"}`}
+      className={`group w-full px-5 relative bg-white rounded-lg overflow-hidden border transition-all duration-200 ${isSelected ? "ring-2 ring-primary md:shadow-lg" : "hover:shadow-md"}`}
       onMouseEnter={() => setHoveredProperty(id)}
       onMouseLeave={() => setHoveredProperty(null)}
       onClick={() => setSelectedProperty(id)}

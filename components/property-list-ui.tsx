@@ -53,7 +53,7 @@ export function PropertyListUi({ properties, hideHeader, onBackToMap }: Property
 
   const renderPageButtons = () => {
     const pageNumbers = []
-    const visiblePages = 3
+    const visiblePages = 4
 
     const start = Math.max(1, currentPage - visiblePages)
     const end = Math.min(totalPages, currentPage + visiblePages)
@@ -111,7 +111,7 @@ export function PropertyListUi({ properties, hideHeader, onBackToMap }: Property
       </ScrollArea>
 
       {totalPages > 1 && (
-        <div className="flex items-center justify-center mt-6 mb-24 px-2 w-full">
+        <div className="flex items-center justify-center mt-6 mb-24 w-full px-5">
           <div className="flex flex-wrap items-center gap-2">
             <Button
               variant="outline"

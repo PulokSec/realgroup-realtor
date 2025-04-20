@@ -22,8 +22,6 @@ import { Checkbox } from "@/components/ui/checkbox"
 export function MapFilters() {
   const { filters, setFilter, resetFilters } = usePropertyStore()
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 2000000])
-  const [sqftRange, setSqftRange] = useState<[number, number]>([0, 5000])
-  const [yearBuiltRange, setYearBuiltRange] = useState<[number, number]>([1900, new Date().getFullYear()])
   const [amenities, setAmenities] = useState({
     pool: false,
     garage: false,
@@ -35,15 +33,6 @@ export function MapFilters() {
   const handlePriceChange = (value: number[]) => {
     setPriceRange([value[0], value[1]])
   }
-
-  const handleSqftChange = (value: number[]) => {
-    setSqftRange([value[0], value[1]])
-  }
-
-  const handleYearBuiltChange = (value: number[]) => {
-    setYearBuiltRange([value[0], value[1]])
-  }
-
   const applyAdvancedFilters = () => {
     setFilter("priceRange", `${priceRange[0]}-${priceRange[1]}`)
 
@@ -60,8 +49,6 @@ export function MapFilters() {
   const handleResetFilters = () => {
     resetFilters()
     setPriceRange([0, 2000000])
-    setSqftRange([0, 5000])
-    setYearBuiltRange([1900, new Date().getFullYear()])
     setAmenities({
       pool: false,
       garage: false,
@@ -147,42 +134,6 @@ export function MapFilters() {
                   </div>
                 </div>
               </div>
-
-              {/* <div className="space-y-4">
-                <h3 className="font-medium">Square Footage</h3>
-                <div className="px-2">
-                  <Slider
-                    defaultValue={[0, 5000]}
-                    min={0}
-                    max={5000}
-                    step={100}
-                    value={[sqftRange[0], sqftRange[1]]}
-                    onValueChange={handleSqftChange}
-                  />
-                  <div className="flex justify-between mt-2 text-sm text-muted-foreground">
-                    <span>{sqftRange[0]} sqft</span>
-                    <span>{sqftRange[1]} sqft</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <h3 className="font-medium">Year Built</h3>
-                <div className="px-2">
-                  <Slider
-                    defaultValue={[1900, new Date().getFullYear()]}
-                    min={1900}
-                    max={new Date().getFullYear()}
-                    step={1}
-                    value={[yearBuiltRange[0], yearBuiltRange[1]]}
-                    onValueChange={handleYearBuiltChange}
-                  />
-                  <div className="flex justify-between mt-2 text-sm text-muted-foreground">
-                    <span>{yearBuiltRange[0]}</span>
-                    <span>{yearBuiltRange[1]}</span>
-                  </div>
-                </div>
-              </div> */}
 
               <div className="space-y-4">
                 <h3 className="font-medium">Amenities</h3>
