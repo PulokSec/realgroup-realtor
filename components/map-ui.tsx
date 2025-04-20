@@ -243,6 +243,7 @@ export function MapUI({ onLoadingChange }: MapUIProps) {
       map.current.on('mouseleave', 'clusters', () => {
         map.current!.getCanvas().style.cursor = ''
       })
+      updateVisibleProperties()
     })
 
     map.current.on('moveend', updateVisibleProperties)
@@ -433,7 +434,7 @@ export function MapUI({ onLoadingChange }: MapUIProps) {
 
       {/* Map Container */}
       <div className={cn('w-full h-full', isMobile && showList && 'hidden')}>
-        <div ref={mapContainer} className="w-full h-[92%]" />
+        <div ref={mapContainer} className="w-full h-[90dvh]" />
         {viewport.loading && (
           <div className="absolute inset-0 bg-background/50 flex items-center justify-center">
             <Loader className="h-8 w-8 animate-spin" />

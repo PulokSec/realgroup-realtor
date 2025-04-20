@@ -1,10 +1,11 @@
 "use client"
 
 import { usePropertyStore } from "@/lib/store"
-import { Loader } from "lucide-react"
+import { EarthIcon, Loader } from "lucide-react"
 import mapboxgl from "mapbox-gl"
 import "mapbox-gl/dist/mapbox-gl.css"
 import { useCallback, useEffect, useRef, useState } from "react"
+import { Button } from "./ui/button"
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || ""
 
@@ -16,13 +17,13 @@ export default function PropertyMap({ onLoadingChange }: PropertyMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<mapboxgl.Map | null>(null)
   const [zoom] = useState(11)
-
+  const [satMap, setSatMap] = useState(false)
   const allProperties = usePropertyStore((state) => state.properties)
   const visibleProperties = usePropertyStore((state) => state.visibleProperties)
   const setSelectedProperty = usePropertyStore((state) => state.setSelectedProperty)
   const selectedProperty = usePropertyStore((state) => state.selectedProperty)
   const hoveredProperty = usePropertyStore((state) => state.hoveredProperty)
-
+  
   const [viewport, setViewport] = useState({
     bounds: null as mapboxgl.LngLatBounds | null,
     loading: false,
@@ -81,7 +82,7 @@ export default function PropertyMap({ onLoadingChange }: PropertyMapProps) {
 
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
-      style: "mapbox://styles/mapbox/satellite-v9",
+      style: satMap ? "mapbox://styles/mapbox/satellite-v9" : "mapbox://styles/mapbox/streets-v9",
       center: [-122.849, 49.1913],
       zoom,
       cooperativeGestures: true,
@@ -239,7 +240,7 @@ export default function PropertyMap({ onLoadingChange }: PropertyMapProps) {
     return () => {
       map.current?.remove()
     }
-  }, [zoom, updateVisibleProperties])
+  }, [zoom, updateVisibleProperties, satMap])
 
   useEffect(() => {
     if (!map.current || !map.current.getSource('properties')) return
@@ -302,9 +303,9 @@ export default function PropertyMap({ onLoadingChange }: PropertyMapProps) {
         </div>
       )}
       <div className="absolute top-4 right-4 z-10">
-            <div className="bg-white px-3 py-2 rounded-full shadow-md text-sm font-medium">
-              Safelight View
-            </div>
+            <Button className={`${satMap ? 'bg-[#0A75C2]' : 'bg-[#000000]'} border-1 border-black shadow-lg px-3 py-2 rounded-full text-sm font-medium`}>
+            <EarthIcon className="h-4 w-4"  onClick={()=> setSatMap(!satMap)}/>
+            </Button>
           </div>
     </div>
   )
