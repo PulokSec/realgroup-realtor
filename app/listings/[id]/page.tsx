@@ -393,7 +393,7 @@ export default function PropertyDetailPage() {
               <div className="flex items-center gap-4 mb-6">
                 <div className="relative h-16 w-16 overflow-hidden rounded-full">
                   <ImageWithFallback
-                    src="/favicon.ico"
+                    src="/logo.png"
                     alt="Agent profile"
                     fill
                     className="object-cover"

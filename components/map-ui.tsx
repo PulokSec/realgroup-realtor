@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { usePropertyStore } from "@/lib/store"
 import { cn } from "@/lib/utils"
-import { List, Loader, Map, SlidersHorizontal, X } from "lucide-react"
+import { EarthIcon, List, Loader, Map, SlidersHorizontal, X } from "lucide-react"
 import mapboxgl from "mapbox-gl"
 import "mapbox-gl/dist/mapbox-gl.css"
 import { useCallback, useEffect, useRef, useState, useMemo } from "react"
@@ -31,6 +31,7 @@ export function MapUI({ onLoadingChange }: MapUIProps) {
   const selectedId = usePropertyStore((s) => s.selectedProperty)
   const hoveredProperty = usePropertyStore((s) => s.hoveredProperty)
   const properties = usePropertyStore((state) => state.properties)
+  const [satMap, setSatMap] = useState(false)
 
   const [viewport, setViewport] = useState({ bounds: null as mapboxgl.LngLatBounds | null, loading: false })
   const isMobile = useMediaQuery("(max-width: 768px)")
@@ -101,7 +102,7 @@ export function MapUI({ onLoadingChange }: MapUIProps) {
 
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
-      style: "mapbox://styles/mapbox/streets-v9",
+      style: satMap ? "mapbox://styles/mapbox/satellite-v9" : "mapbox://styles/mapbox/streets-v9",
       center: [-122.849, 49.1913],
       zoom: 11,
     })
@@ -253,7 +254,7 @@ export function MapUI({ onLoadingChange }: MapUIProps) {
       map.current?.remove()
       map.current = null
     }
-  }, [isMobile, showList, updateVisibleProperties])
+  }, [isMobile, showList, updateVisibleProperties, satMap])
 
   // Update source data when filtered changes
   useEffect(() => {
@@ -441,7 +442,14 @@ export function MapUI({ onLoadingChange }: MapUIProps) {
           </div>
         )}
       </div>
-
+      <div className="absolute top-24 right-4 z-10">
+      <Button
+          onClick={() => setSatMap((prev) => !prev)}
+          className={`${satMap ? 'bg-white text-[#4CAF50]' : 'bg-[#000000] text-white'} border-1 border-black shadow-lg px-3 py-2 rounded-full text-sm font-medium hover:bg-[#FFC107]`}
+        >
+          <EarthIcon className="h-4 w-4 " />
+        </Button>
+          </div>
       {/* Mobile List View */}
       {isMobile && showList && (
         <div className="h-full pt-16">

@@ -79,10 +79,11 @@ export default function PropertyMap({ onLoadingChange }: PropertyMapProps) {
 
   useEffect(() => {
     if (!mapContainer.current) return
+    let mapStyle = satMap ? "mapbox://styles/mapbox/satellite-v9" : "mapbox://styles/mapbox/streets-v9";
 
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
-      style: satMap ? "mapbox://styles/mapbox/satellite-v9" : "mapbox://styles/mapbox/streets-v9",
+      style: mapStyle,
       center: [-122.849, 49.1913],
       zoom,
       cooperativeGestures: true,
@@ -303,9 +304,12 @@ export default function PropertyMap({ onLoadingChange }: PropertyMapProps) {
         </div>
       )}
       <div className="absolute top-4 right-4 z-10">
-            <Button className={`${satMap ? 'bg-[#0A75C2]' : 'bg-[#000000]'} border-1 border-black shadow-lg px-3 py-2 rounded-full text-sm font-medium`}>
-            <EarthIcon className="h-4 w-4"  onClick={()=> setSatMap(!satMap)}/>
-            </Button>
+      <Button
+          onClick={() => setSatMap((prev) => !prev)}
+          className={`${satMap ? 'bg-white text-[#4CAF50]' : 'bg-[#000000] text-white'} border-1 border-black shadow-lg px-3 py-2 rounded-full text-sm font-medium hover:bg-[#FFC107]`}
+        >
+          <EarthIcon className="h-4 w-4 " />
+        </Button>
           </div>
     </div>
   )
