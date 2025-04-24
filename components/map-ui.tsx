@@ -413,17 +413,6 @@ export function MapUI({ onLoadingChange }: MapUIProps) {
                   </div>
                 </SheetContent>
               </Sheet>
-              <div className="flex gap-2">
-                {Object.entries(filters).map(([key, value]) => value && (
-                  <Badge key={key} className="gap-1">
-                    {key}: {value}
-                    <X 
-                      className="h-3 w-3 cursor-pointer" 
-                      onClick={() => setFilters(prev => ({ ...prev, [key]: '' }))}
-                    />
-                  </Badge>
-                ))}
-              </div>
             </div>
             <Button variant="outline" size="sm" onClick={() => setShowList(true)}>
               <List className="h-4 w-4 mr-2" />
