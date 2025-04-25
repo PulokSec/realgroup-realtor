@@ -31,7 +31,7 @@ export function AdminSidebar() {
   return (
     <>
       {/* Mobile menu button */}
-      <Button variant="ghost" size="icon" className="md:hidden fixed top-4 left-4 z-50" onClick={toggleSidebar}>
+      <Button variant="ghost" size="icon" className="md:hidden fixed top-4 right-4 z-50" onClick={toggleSidebar}>
         {isOpen ? <X /> : <Menu />}
       </Button>
 
