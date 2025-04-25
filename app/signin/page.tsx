@@ -19,7 +19,7 @@ export default function SignInPage() {
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
-  const redirect = "/admin";
+  const redirect = "/admin/dashboard";
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
